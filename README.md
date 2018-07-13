@@ -13,4 +13,9 @@
 - Comparison of code length and complexity.
 ## x86 Instruction Demostration
 #### XLAT
-- %rbx register for holding base address.
+- Demostration of %rbx register for holding base address.
+- Relative addressing by %rip.
+#### MOVSB
+- Demostration of %rdi, %rsi for holding string address.
+- Demostration of %rcx for counting.
+- Demostration of multi-cycle instructions and flag operating instruction.
