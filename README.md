@@ -21,3 +21,6 @@
 - Demostration of multi-cycle instructions and flag operating instruction.
 #### ENTER & LEAVE
 - Demostration of ENTER and LEAVE instructions.
+## Compilation
+#### Huge Binary File
+- Demostration of using -mcmodel=large flag.
