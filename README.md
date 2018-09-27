@@ -32,6 +32,10 @@
 #### Signal Handling with Multithread
 - Demostration of signal handling in multithread circumstance.
 
+## Special Floating Point Arithmic
+#### Arithmic Among Nan, +Inf and -Inf
+- Illustration of the special arithmic of float.
+
 ## Floating Point Arithmetic
 #### Single Precision Add & Sub
 - Explaination of "addss" like instructions.
