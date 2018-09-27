@@ -20,8 +20,8 @@ int main()
     printf("inf - 1 = %f\n", _posinf - 1);
 
     printf("\nMul & Div:\n");
-    printf("nan * 2 = %f\n", _nan * 1);
-    printf("nan / 2 = %f\n", _nan / 1);
+    printf("nan * 2 = %f\n", _nan * 2);
+    printf("nan / 2 = %f\n", _nan / 2);
     printf("nan * 0 = %f\n", _nan * 0);
     printf("inf * 2 = %f\n", _posinf * 2);
     printf("(-inf) / 2 = %f\n", _neginf / 2);
