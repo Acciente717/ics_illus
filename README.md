@@ -48,3 +48,11 @@
 #### Long Double Operations
 - Explaination of floating point stack.
 - Demostration of legacy x87 instructions.
+
+## Proxy Lab
+- Safe initialization of global variables.
+- Principle of asynchronous I/O.
+- Demonstration of using coroutines.
+- Demonstration of using lambda expression for function binding.
+- Demonstration of Boost Library.
+- Demonstration of various C++11/14 features.
