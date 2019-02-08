@@ -2,8 +2,8 @@
  * Asynchronous Implementation of Proxy Lab with Boost Library
  * 
  * Author: Zhiyao Ma @ Peking University
- * Data: 2019/02/06
- * Version: 1.0
+ * Date: 2019/02/08
+ * Version: 1.1
  * 
  * All rights reserved.
  */
@@ -15,7 +15,6 @@
 #include <vector>
 #include <stdexcept>
 #include <memory>
-#include <array>
 #include <string>
 #include <algorithm>
 #include <boost/bind.hpp>
@@ -129,12 +128,12 @@ public:
                     return ret_str;
                 }
                 buffered_data.clear();
-                return std::string();
+                throw;
             }
             catch (...)
             {
                 buffered_data.clear();
-                return std::string();
+                throw;
             }
             pos = buffered_data.length();
             buffered_data.insert(buffered_data.end(), vec.data(), vec.data() + bytes_read);
@@ -181,6 +180,18 @@ static void create_threadpool(std::size_t pool_size)
 }
 
 /**
+ * Exeption class which represents error in parsing HTTP header.
+ */
+class client_header_error : public std::exception
+{
+public:
+    virtual const char* what() const noexcept override
+    {
+        return "Bad HTTP header received from client.";
+    }
+};
+
+/**
  * Patch the request received from the client.
  * Parse the URI from received URL.
  * Change "HTTP/1.1" to "HTTP/1.0".
@@ -189,7 +200,7 @@ static void create_threadpool(std::size_t pool_size)
  * 
  * Return `true` on success, `false` on error.
  */
-static bool patch_request(yield_context yield, line_parser &parser,
+static void patch_request(yield_context yield, line_parser &parser,
                           std::string &patched_req, std::string &host)
 {
     {
@@ -199,19 +210,19 @@ static bool patch_request(yield_context yield, line_parser &parser,
 
         auto pos = first_line.find(' ', 0);
         if (pos == std::string::npos)
-            return false;
+            throw client_header_error();
         method = first_line.substr(0, pos++);
         if (method != "GET")
-            return false;
+            throw client_header_error();
 
         for (; pos < len; ++pos)
             if (first_line[pos] != ' ')
                 break;
         if (pos >= len)
-            return false;
+            throw client_header_error();
         auto next_pos = first_line.find(' ', pos);
         if (next_pos == std::string::npos)
-            return false;
+            throw client_header_error();
         url = first_line.substr(pos, next_pos - pos);
         
         pos = url.find("//");
@@ -251,8 +262,6 @@ static bool patch_request(yield_context yield, line_parser &parser,
         else
             patched_req += line;
     }
-
-    return true;
 }
 
 /**
@@ -289,14 +298,13 @@ static void relay_back_to_client(yield_context yield, boost_socket &client_sock,
  */
 static void proxy_routine(yield_context yield, psocket sock_ptr)
 {
-    // Parse and patch the request received from client.
-    line_parser parser(sock_ptr);
     std::string patched_req, host;
-    if (!patch_request(yield, parser, patched_req, host))
-        return;
-
     try
     {
+        // Parse and patch the request received from client.
+        line_parser parser(sock_ptr);
+        patch_request(yield, parser, patched_req, host);
+
         // Resolve the remote host, and try connecting to it.
         boost::asio::ip::tcp::resolver resolver(get_io_service());
         boost::asio::ip::tcp::resolver::query query(host, "80");
@@ -311,19 +319,25 @@ static void proxy_routine(yield_context yield, psocket sock_ptr)
     }
     catch (boost::system::system_error &e)
     {
-        std::cerr << "Boost error caught at host:"
+        std::cerr << "Boost error caught at hostname: "
                   << host << std::endl
                   << "Error: " << e.what() << std::endl;
     }
+    catch (client_header_error &e)
+    {
+        std::cerr << "Error occured when parsing HTTP header "
+                  << "from the client" << std::endl;
+    }
     catch (std::exception& e)
     {
-        std::cerr << "System exception caught at host:"
+        std::cerr << "System exception caught at hostname: "
                   << host << std::endl
                   << "Error: " << e.what() << std::endl;
     }
     catch (...)
     {
-        std::cerr << "Unknown exception caught at host:" << host << std::endl;
+        std::cerr << "Unknown exception caught at hostname: "
+                  << host << std::endl;
     }
 
     return;
