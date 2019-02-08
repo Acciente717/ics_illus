@@ -390,7 +390,7 @@ int main(int argc, char **argv)
     }
 
     // Start additional threads if needed.
-    int thread_num = 1;
+    int thread_num = 0;
     if (argc == 3)
     {
         thread_num = std::atoi(argv[2]) - 1;
